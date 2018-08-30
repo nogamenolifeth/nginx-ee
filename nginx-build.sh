@@ -11,7 +11,7 @@ clear
 # check if curl is installed
 
 if [ ! -x /usr/bin/curl ]; then
-    apt-get install curl >>/tmp/nginx-ee.log 2>&1
+    apt-get install curl >>/tmp/nginx-ee.log
 fi
 
 ##################################
@@ -144,10 +144,10 @@ fi
 ##################################
 
 echo -ne '       Installing dependencies               [..]\r'
-apt-get update >>/tmp/nginx-ee.log 2>&1
+apt-get update >>/tmp/nginx-ee.log
 apt-get install -y git build-essential libtool automake autoconf zlib1g-dev \
     libpcre3-dev libgd-dev libssl-dev libxslt1-dev libxml2-dev libgeoip-dev \
-    libgoogle-perftools-dev libperl-dev libpam0g-dev libxslt1-dev libbsd-dev zip unzip gnupg gnupg2 >>/tmp/nginx-ee.log 2>&1
+    libgoogle-perftools-dev libperl-dev libpam0g-dev libxslt1-dev libbsd-dev zip unzip gnupg gnupg2 >>/tmp/nginx-ee.log
 
 if [ $? -eq 0 ]; then
     echo -ne "       Installing dependencies                [${CGREEN}OK${CEND}]\\r"
@@ -182,25 +182,23 @@ fi
 
 # Checking lsb_release package
 if [ ! -x /usr/bin/lsb_release ]; then
-    apt-get -y install lsb-release >>/tmp/nginx-ee.log 2>&1
+    apt-get -y install lsb-release >>/tmp/nginx-ee.log
 fi
 
 # install gcc-7
 distro_version=$(lsb_release -sc)
 
-if [ "$NGINX_RELEASE" = "1" ] && [ "$RTMP" = "n" ]; then
-    if [ "$distro_version" == "xenial" ] || [ "$distro_version" == "bionic" ]; then
-        if [ ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-bionic.list ] && [ ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-xenial.list ]; then
+if [[ "$NGINX_RELEASE" = "1" && "$RTMP" = "n" ]]; then
+    if [[ "$distro_version" == "xenial" || "$distro_version" == "bionic" ]]; then
+        if [[ ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-bionic.list && ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-xenial.list ]]; then
             echo -ne '       Installing gcc-8                       [..]\r'
             {
                 apt-get install software-properties-common -y
                 add-apt-repository ppa:jonathonf/gcc-8.1 -y
                 apt-get update
                 apt-get install gcc-8 g++-8 -y
-            } >>/tmp/nginx-ee.log 2>&1
+            } >>/tmp/nginx-ee.log
 
-            export CC="/usr/bin/gcc-8"
-            export CXX="/usr/bin/gc++-8"
             if [ $? -eq 0 ]; then
                 echo -ne "       Installing gcc-8                       [${CGREEN}OK${CEND}]\\r"
                 echo -ne '\n'
@@ -212,6 +210,8 @@ if [ "$NGINX_RELEASE" = "1" ] && [ "$RTMP" = "n" ]; then
                 exit 1
             fi
         fi
+            export CC="/usr/bin/gcc-8"
+            export CXX="/usr/bin/gc++-8"
     fi
 else
     if [ "$distro_version" == "xenial" ]; then
@@ -222,10 +222,7 @@ else
                 add-apt-repository ppa:jonathonf/gcc-7.1 -y
                 apt-get update
                 apt-get install gcc-7 g++-7 -y
-            } >>/tmp/nginx-ee.log 2>&1
-
-            export CC="/usr/bin/gcc-7"
-            export CXX="/usr/bin/gc++-7"
+            } >>/tmp/nginx-ee.log
             if [ $? -eq 0 ]; then
                 echo -ne "       Installing gcc-7                       [${CGREEN}OK${CEND}]\\r"
                 echo -ne '\n'
@@ -238,11 +235,10 @@ else
             fi
         fi
     fi
-    if [ "$distro_version" == "bionic" ]; then
+    if [[ "$distro_version" == "bionic" || "$distro_version" == "xenial" ]]; then
         export CC="/usr/bin/gcc-7"
         export CXX="/usr/bin/gc++-7"
     fi
-
 fi
 
 ##################################
@@ -262,7 +258,7 @@ if [ "$RTMP" = "y" ]; then
         else
             apt-get install ffmpeg -y
         fi
-    } >>/tmp/nginx-ee.log 2>&1
+    } >>/tmp/nginx-ee.log
     if [ $? -eq 0 ]; then
         echo -ne "       Installing FFMPEG for RMTP module      [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
@@ -372,7 +368,7 @@ echo -ne '       Downloading additionals modules        [..]\r'
         git clone https://github.com/masonicboom/ipscrub.git ipscrubtmp
         cp -rf $DIR_SRC/ipscrubtmp/ipscrub $DIR_SRC/ipscrub
     fi
-} >>/tmp/nginx-ee.log 2>&1
+} >>/tmp/nginx-ee.log
 
 if [ $? -eq 0 ]; then
     echo -ne "       Downloading additionals modules        [${CGREEN}OK${CEND}]\\r"
@@ -384,6 +380,72 @@ else
     echo ""
     exit 1
 fi
+
+
+##################################
+# Download and compile pcre
+##################################
+
+cd $DIR_SRC || exit
+
+echo -ne '       Downloading pcre                       [..]\r'
+
+if [ -d $DIR_SRC/pcre ]; then
+rm -rf pcre
+fi
+{
+wget -O pcre.tar.gz ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.42.tar.gz
+tar -zxf pcre.tar.gz
+mv pcre-8.42 prce
+cd pcre || exit 0
+./configure
+make
+} >>/tmp/nginx-ee.log
+
+if [ $? -eq 0 ]; then
+    echo -ne "       Downloading pcre                       [${CGREEN}OK${CEND}]\\r"
+    echo -ne '\n'
+else
+    echo -e "       Downloading pcre        [${CRED}FAIL${CEND}]"
+    echo ""
+    echo "Please look at /tmp/nginx-ee.log"
+    echo ""
+    exit 1
+fi
+
+
+##################################
+# Download and compile zlib
+##################################
+
+cd $DIR_SRC || exit
+
+echo -ne '       Downloading zlib                       [..]\r'
+
+if [ -d $DIR_SRC/zlib ]; then
+rm -rf zlib
+fi
+{
+wget -O zlib.tar.gz http://zlib.net/zlib-1.2.11.tar.gz
+tar -zxf zlib.tar.gz
+mv zlib-1.2.11 zlib
+cd zlib || exit 0
+./configure
+make
+} >>/tmp/nginx-ee.log
+
+if [ $? -eq 0 ]; then
+    echo -ne "       Downloading zlib                       [${CGREEN}OK${CEND}]\\r"
+    echo -ne '\n'
+else
+    echo -e "       Downloading zlib        [${CRED}FAIL${CEND}]"
+    echo ""
+    echo "Please look at /tmp/nginx-ee.log"
+    echo ""
+    exit 1
+fi
+
+
 
 ##################################
 # Download ngx_broti
@@ -400,7 +462,7 @@ echo -ne '       Downloading brotli                     [..]\r'
     fi
     cd ngx_brotli || exit
     git submodule update --init --recursive
-} >>/tmp/nginx-ee.log 2>&1
+} >>/tmp/nginx-ee.log
 
 if [ $? -eq 0 ]; then
     echo -ne "       Downloading brotli                     [${CGREEN}OK${CEND}]\\r"
@@ -430,7 +492,7 @@ cd $DIR_SRC || exit
         cd $DIR_SRC/openssl || exit
         git checkout $OPENSSL_VER
     fi
-} >>/tmp/nginx-ee.log 2>&1
+} >>/tmp/nginx-ee.log
 
 if [ $? -eq 0 ]; then
     echo -ne "       Downloading openssl                    [${CGREEN}OK${CEND}]\\r"
@@ -457,7 +519,7 @@ if [ "$NAXSI" = "y" ]; then
         wget -O naxsi.tar.gz https://github.com/nbs-system/naxsi/archive/$NAXSI_VER.tar.gz
         tar xvzf naxsi.tar.gz
         mv naxsi-$NAXSI_VER naxsi
-    } >>/tmp/nginx-ee.log 2>&1
+    } >>/tmp/nginx-ee.log
 
     if [ $? -eq 0 ]; then
         echo -ne "       Downloading naxsi                      [${CGREEN}OK${CEND}]\\r"
@@ -485,7 +547,7 @@ if [ "$PAGESPEED" = "y" ]; then
         wget https://raw.githubusercontent.com/pagespeed/ngx_pagespeed/master/scripts/build_ngx_pagespeed.sh
         chmod +x build_ngx_pagespeed.sh
         ./build_ngx_pagespeed.sh --ngx-pagespeed-version latest-beta -b $DIR_SRC
-    } >>/tmp/nginx-ee.log 2>&1
+    } >>/tmp/nginx-ee.log
 
     if [ $? -eq 0 ]; then
         echo -ne "       Downloading pagespeed                  [${CGREEN}OK${CEND}]\\r"
@@ -512,7 +574,7 @@ fi
     wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz
     tar -xzf nginx-${NGINX_VER}.tar.gz
     mv nginx-${NGINX_VER} nginx
-} >>/tmp/nginx-ee.log 2>&1
+} >>/tmp/nginx-ee.log
 
 cd $DIR_SRC/nginx/ || exit
 
@@ -533,8 +595,8 @@ fi
 
 echo -ne '       Applying nginx patches                 [..]\r'
 
-wget -O nginx__dynamic_tls_records.patch https://raw.githubusercontent.com/cujanovic/nginx-dynamic-tls-records-patch/master/nginx__dynamic_tls_records_1.13.0%2B.patch >>/tmp/nginx-ee.log 2>&1
-patch -p1 <nginx__dynamic_tls_records.patch >>/tmp/nginx-ee.log 2>&1
+wget -O nginx__dynamic_tls_records.patch https://raw.githubusercontent.com/cujanovic/nginx-dynamic-tls-records-patch/master/nginx__dynamic_tls_records_1.13.0%2B.patch >>/tmp/nginx-ee.log
+patch -p1 <nginx__dynamic_tls_records.patch >>/tmp/nginx-ee.log
 #wget -O nginx_hpack.patch $HPACK_VERSION >> /tmp/nginx-ee.log 2>&1
 #patch -p1 <  nginx_hpack.patch >> /tmp/nginx-ee.log 2>&1
 
@@ -556,9 +618,9 @@ fi
 echo -ne '       Configuring nginx                      [..]\r'
 
 ./configure \
-$ngx_naxsi \
-"${nginx_cc_opt[@]}" \
---with-ld-opt='-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now' \
+    $ngx_naxsi \
+    "${nginx_cc_opt[@]}" \
+    --with-ld-opt='-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now' \
     --prefix=/usr/share/nginx \
     --conf-path=/etc/nginx/nginx.conf \
     --http-log-path=/var/log/nginx/access.log \
@@ -570,6 +632,8 @@ $ngx_naxsi \
     --http-proxy-temp-path=/var/lib/nginx/proxy \
     --http-scgi-temp-path=/var/lib/nginx/scgi \
     --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
+    --with-pcre=/usr/local/src/pcre \
+    --with-zlib=usr/local/src/zlib \
     --with-pcre-jit \
     --with-http_ssl_module \
     --with-http_stub_status_module \
@@ -602,7 +666,7 @@ $ngx_naxsi \
     $ngx_rtmp \
     --with-openssl=/usr/local/src/openssl \
     --with-openssl-opt=enable-tls1_3 \
-    --sbin-path=/usr/sbin/nginx >>/tmp/nginx-ee.log 2>&1
+    --sbin-path=/usr/sbin/nginx >>/tmp/nginx-ee.log
 
 if [ $? -eq 0 ]; then
     echo -ne "       Configuring nginx                      [${CGREEN}OK${CEND}]\\r"
@@ -624,7 +688,7 @@ echo -ne '       Compiling nginx                        [..]\r'
 {
     make -j "$(nproc)"
     make install
-} >>/tmp/nginx-ee.log 2>&1
+} >>/tmp/nginx-ee.log
 
 if [ $? -eq 0 ]; then
     echo -ne "       Compiling nginx                        [${CGREEN}OK${CEND}]\\r"
@@ -649,7 +713,7 @@ fi
     systemctl restart nginx
     nginx -t
     service nginx reload
-} >>/tmp/nginx-ee.log 2>&1
+} >>/tmp/nginx-ee.log
 
 # We're done !
 echo ""
