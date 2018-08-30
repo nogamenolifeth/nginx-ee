@@ -390,14 +390,15 @@ cd $DIR_SRC || exit
 echo -ne "       Downloading pcre                       [..]\\r"
 
 if [ -d $DIR_SRC/pcre ]; then
-    rm -rf pcre
+    rm -rf $DIR_SRC/pcre
 fi
 {
+    cd $DIR_SRC || exit
     wget -O pcre.tar.gz ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.42.tar.gz
     tar -zxf pcre.tar.gz
     mv pcre-8.42 pcre
-    cd pcre || exit 0
-    ./configure
+    cd pcre || exit
+    $DIR_SRC/pcre/configure
     make
 } >>/tmp/nginx-ee.log
 
@@ -422,9 +423,10 @@ cd $DIR_SRC || exit
 echo -ne "       Downloading zlib                       [..]\\r"
 
 if [ -d $DIR_SRC/zlib ]; then
-    rm -rf zlib
+    rm -rf $DIR_SRC/zlib
 fi
 {
+    cd $DIR_SRC || exit
     wget -O zlib.tar.gz http://zlib.net/zlib-1.2.11.tar.gz
     tar -zxf zlib.tar.gz
     mv zlib-1.2.11 zlib
