@@ -351,6 +351,7 @@ echo -ne "       Downloading additionals modules        [..]\\r"
     fi
     # http redis module
     if [ ! -d $DIR_SRC/ngx_http_redis ]; then
+
         wget https://people.freebsd.org/~osa/ngx_http_redis-0.3.8.tar.gz
         tar -xzf ngx_http_redis-0.3.8.tar.gz
         mv ngx_http_redis-0.3.8 ngx_http_redis
@@ -367,7 +368,7 @@ echo -ne "       Downloading additionals modules        [..]\\r"
         git clone https://github.com/masonicboom/ipscrub.git ipscrubtmp
         cp -rf $DIR_SRC/ipscrubtmp/ipscrub $DIR_SRC/ipscrub
     fi
-} >> /tmp/nginx-ee.log
+} >>/tmp/nginx-ee.log 2>&1
 
 if [ $? -eq 0 ]; then
     echo -ne "       Downloading additionals modules        [${CGREEN}OK${CEND}]\\r"
@@ -394,11 +395,10 @@ if [ -d $DIR_SRC/pcre ]; then
 fi
 {
     cd $DIR_SRC || exit
-    wget -O $DIR_SRC/pcre.tar.gz ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.42.tar.gz
+    wget -qO $DIR_SRC/pcre.tar.gz ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.42.tar.gz
     tar -zxf pcre.tar.gz
-    mv pcre-8.42 pcre
-    cd pcre || exit
-    $DIR_SRC/pcre/configure
+    cd pcre-8.42 || exit
+    $DIR_SRC/pcre-8.42/configure
     make
 } >>/tmp/nginx-ee.log
 
@@ -427,7 +427,7 @@ if [ -d $DIR_SRC/zlib ]; then
 fi
 {
     cd $DIR_SRC || exit
-    wget -O zlib.tar.gz http://zlib.net/zlib-1.2.11.tar.gz
+    wget -qO zlib.tar.gz http://zlib.net/zlib-1.2.11.tar.gz
     tar -zxf zlib.tar.gz
     mv zlib-1.2.11 zlib
     cd zlib || exit 0
@@ -633,8 +633,8 @@ $ngx_naxsi \
 --http-proxy-temp-path=/var/lib/nginx/proxy \
 --http-scgi-temp-path=/var/lib/nginx/scgi \
 --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
---with-pcre=/usr/local/src/pcre \
---with-zlib=usr/local/src/zlib \
+--with-pcre=/usr/local/src/pcre-8.42 \
+--with-zlib=/usr/local/src/zlib \
 --with-pcre-jit \
 --with-http_ssl_module \
 --with-http_stub_status_module \
