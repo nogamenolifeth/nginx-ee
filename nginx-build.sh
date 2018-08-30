@@ -396,7 +396,7 @@ fi
 {
 wget -O pcre.tar.gz ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.42.tar.gz
 tar -zxf pcre.tar.gz
-mv pcre-8.42 prce
+mv pcre-8.42 pcre
 cd pcre || exit 0
 ./configure
 make
