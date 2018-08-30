@@ -188,9 +188,9 @@ fi
 # install gcc-7
 distro_version=$(lsb_release -sc)
 
-if [[ "$NGINX_RELEASE" = "1" && "$RTMP" = "n" ]]; then
-    if [[ "$distro_version" == "xenial" || "$distro_version" == "bionic" ]]; then
-        if [[ ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-bionic.list && ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-xenial.list ]]; then
+if [ "$NGINX_RELEASE" = "1" ] && [ "$RTMP" = "n" ]; then
+    if [ "$distro_version" == "xenial" ] || [ "$distro_version" == "bionic" ]; then
+        if [ ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-bionic.list ] && [ ! -f /etc/apt/sources.list.d/jonathonf-ubuntu-gcc-8_1-xenial.list ]; then
             echo -ne "       Installing gcc-8                       [..]\\r"
             {
                 apt-get install software-properties-common -y
@@ -235,7 +235,7 @@ else
             fi
         fi
     fi
-    if [[ "$distro_version" == "bionic" || "$distro_version" == "xenial" ]]; then
+    if [ "$distro_version" == "bionic" ] || [ "$distro_version" == "xenial" ]; then
         export CC="/usr/bin/gcc-7"
         export CXX="/usr/bin/gc++-7"
     fi
@@ -394,7 +394,7 @@ if [ -d $DIR_SRC/pcre ]; then
 fi
 {
     cd $DIR_SRC || exit
-    wget -O pcre.tar.gz ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.42.tar.gz
+    wget -O $DIR_SRC/pcre.tar.gz ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.42.tar.gz
     tar -zxf pcre.tar.gz
     mv pcre-8.42 pcre
     cd pcre || exit
@@ -437,7 +437,7 @@ fi
 
 if [ $? -eq 0 ]; then
     echo -ne "       Downloading zlib                       [${CGREEN}OK${CEND}]\\r"
-    echo -ne "\n"
+    echo -ne "\\n"
 else
     echo -e "       Downloading zlib        [${CRED}FAIL${CEND}]"
     echo ""
