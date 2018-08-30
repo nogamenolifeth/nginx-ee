@@ -168,8 +168,8 @@ if [ ! -d /etc/nginx ]; then
 
     mkdir -p /etc/nginx/{conf.d,common,sites-available,sites-enabled}
 
-    wget -O /etc/nginx/nginx.conf https://raw.githubusercontent.com/VirtuBox/nginx-ee/develop/etc/nginx/nginx.conf
-    wget -O /etc/nginx/sites-available/default https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/nginx/sites-available/default
+    wget -qO /etc/nginx/nginx.conf https://raw.githubusercontent.com/VirtuBox/nginx-ee/develop/etc/nginx/nginx.conf
+    wget -qO /etc/nginx/sites-available/default https://raw.githubusercontent.com/VirtuBox/ubuntu-nginx-web-server/master/etc/nginx/sites-available/default
     ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 fi
@@ -352,7 +352,7 @@ echo -ne "       Downloading additionals modules        [..]\\r"
     # http redis module
     if [ ! -d $DIR_SRC/ngx_http_redis ]; then
 
-        wget https://people.freebsd.org/~osa/ngx_http_redis-0.3.8.tar.gz
+        wget -q https://people.freebsd.org/~osa/ngx_http_redis-0.3.8.tar.gz
         tar -xzf ngx_http_redis-0.3.8.tar.gz
         mv ngx_http_redis-0.3.8 ngx_http_redis
     fi
@@ -517,7 +517,7 @@ if [ "$NAXSI" = "y" ]; then
         if [ -d $DIR_SRC/naxsi ]; then
             rm -rf $DIR_SRC/naxsi
         fi
-        wget -O naxsi.tar.gz https://github.com/nbs-system/naxsi/archive/$NAXSI_VER.tar.gz
+        wget -qO naxsi.tar.gz https://github.com/nbs-system/naxsi/archive/$NAXSI_VER.tar.gz
         tar xvzf naxsi.tar.gz
         mv naxsi-$NAXSI_VER naxsi
     } >>/tmp/nginx-ee.log
@@ -545,7 +545,7 @@ if [ "$PAGESPEED" = "y" ]; then
 
     {
         rm -rf incubator-pagespeed-ngx-latest-beta build_ngx_pagespeed.sh install
-        wget https://raw.githubusercontent.com/pagespeed/ngx_pagespeed/master/scripts/build_ngx_pagespeed.sh
+        wget -q https://raw.githubusercontent.com/pagespeed/ngx_pagespeed/master/scripts/build_ngx_pagespeed.sh
         chmod +x build_ngx_pagespeed.sh
         ./build_ngx_pagespeed.sh --ngx-pagespeed-version latest-beta -b $DIR_SRC
     } >>/tmp/nginx-ee.log
@@ -572,7 +572,7 @@ if [ -d $DIR_SRC/nginx ]; then
     rm -rf $DIR_SRC/nginx
 fi
 {
-    wget http://nginx.org/download/nginx-${NGINX_VER}.tar.gz
+    wget -q http://nginx.org/download/nginx-${NGINX_VER}.tar.gz
     tar -xzf nginx-${NGINX_VER}.tar.gz
     mv nginx-${NGINX_VER} nginx
 } >>/tmp/nginx-ee.log
@@ -596,7 +596,7 @@ fi
 
 echo -ne "       Applying nginx patches                 [..]\\r"
 
-wget -O nginx__dynamic_tls_records.patch https://raw.githubusercontent.com/cujanovic/nginx-dynamic-tls-records-patch/master/nginx__dynamic_tls_records_1.13.0%2B.patch >>/tmp/nginx-ee.log
+wget -qO nginx__dynamic_tls_records.patch https://raw.githubusercontent.com/cujanovic/nginx-dynamic-tls-records-patch/master/nginx__dynamic_tls_records_1.13.0%2B.patch >>/tmp/nginx-ee.log
 patch -p1 <nginx__dynamic_tls_records.patch >>/tmp/nginx-ee.log
 #wget -O nginx_hpack.patch $HPACK_VERSION >> /tmp/nginx-ee.log 2>&1
 #patch -p1 <  nginx_hpack.patch >> /tmp/nginx-ee.log 2>&1
