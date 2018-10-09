@@ -674,6 +674,7 @@ if [ $NGINX_PLESK = "0" ]; then
     --add-module=/usr/local/src/ipscrub \
     --add-module=/usr/local/src/ngx_http_auth_pam_module \
     --add-module=/usr/local/src/nginx-module-vts \
+    --add-module=$(passenger-config --nginx-addon-dir) \
     $ngx_pagespeed \
     $ngx_rtmp \
     --with-openssl=/usr/local/src/openssl \
@@ -726,6 +727,7 @@ else
     --add-module=/usr/local/src/ngx_brotli \
     --add-module=/usr/local/src/ngx_http_auth_pam_module \
     --add-module=/usr/local/src/nginx-module-vts \
+    --add-module=$(passenger-config --nginx-addon-dir) \
     $ngx_pagespeed \
     $ngx_rtmp \
     --with-openssl=/usr/local/src/openssl \
